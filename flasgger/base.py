@@ -32,7 +32,9 @@ except ImportError:
     RequestParser = None
 import jsonschema
 from mistune import markdown
-from .constants import OPTIONAL_FIELDS, OPTIONAL_OAS3_FIELDS
+from .constants import OAS3_SUB_COMPONENTS
+from .constants import OPTIONAL_FIELDS
+from .constants import OPTIONAL_OAS3_FIELDS
 from .utils import LazyString
 from .utils import extract_definitions
 from .utils import get_schema_specs
@@ -447,31 +449,14 @@ class Swagger(object):
                 if is_openapi3(openapi_version):
                     source_components = swag.get('components', {})
                     update_schemas = source_components.get('schemas', {})
-                    merge_sub_component(data['components'], 'parameters',
-                                        source_components.get('parameters',
-                                        {}))
-                    merge_sub_component(data['components'], 'securitySchemes',
-                                        source_components.get(
-                                            'securitySchemes',
-                                        {}))
-                    merge_sub_component(data['components'], 'requestBodies',
-                                        source_components.get('requestBodies',
-                                        {}))
-                    merge_sub_component(data['components'], 'responses',
-                                        source_components.get('responses',
-                                        {}))
-                    merge_sub_component(data['components'], 'headers',
-                                        source_components.get('headers',
-                                        {}))
-                    merge_sub_component(data['components'], 'examples',
-                                        source_components.get('examples',
-                                        {}))
-                    merge_sub_component(data['components'], 'links',
-                                        source_components.get('links',
-                                        {}))
-                    merge_sub_component(data['components'], 'callbacks',
-                                        source_components.get('callbacks',
-                                        {}))
+                    # clone list so we can modify
+                    active_sub_components = OAS3_SUB_COMPONENTS[:]
+                    # schemas are handled separately, so remove them here
+                    active_sub_components.remove("schemas")
+                    for subcomponent in OAS3_SUB_COMPONENTS:
+                        merge_sub_component(data['components'], subcomponent,
+                                            source_components.get(subcomponent,
+                                            {}))
                 else:  # openapi2
                     update_schemas = swag.get('definitions', {})
 
