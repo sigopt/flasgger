@@ -433,20 +433,53 @@ class Swagger(object):
             openapi_version=openapi_version,
             doc_dir=self.config.get('doc_dir'))
 
+        def merge_sub_component(dest, key, source):
+            if len(source) > 0 and dest.get(key) is None:
+                dest[key] = {}
+            if len(source) > 0 and len(dest[key]) >= 0:
+                dest[key].update(source)
+
         http_methods = ['get', 'post', 'put', 'delete']
         for rule, verbs in specs:
             operations = dict()
             for verb, swag in verbs:
 
                 if is_openapi3(openapi_version):
-                    update_dict = swag.get('components', {}).get('schemas', {})
+                    source_components = swag.get('components', {})
+                    update_schemas = source_components.get('schemas', {})
+                    merge_sub_component(data['components'], 'parameters',
+                                        source_components.get('parameters',
+                                        {}))
+                    merge_sub_component(data['components'], 'securitySchemes',
+                                        source_components.get(
+                                            'securitySchemes',
+                                        {}))
+                    merge_sub_component(data['components'], 'requestBodies',
+                                        source_components.get('requestBodies',
+                                        {}))
+                    merge_sub_component(data['components'], 'responses',
+                                        source_components.get('responses',
+                                        {}))
+                    merge_sub_component(data['components'], 'headers',
+                                        source_components.get('headers',
+                                        {}))
+                    merge_sub_component(data['components'], 'examples',
+                                        source_components.get('examples',
+                                        {}))
+                    merge_sub_component(data['components'], 'links',
+                                        source_components.get('links',
+                                        {}))
+                    merge_sub_component(data['components'], 'callbacks',
+                                        source_components.get('callbacks',
+                                        {}))
                 else:  # openapi2
-                    update_dict = swag.get('definitions', {})
+                    update_schemas = swag.get('definitions', {})
 
-                if type(update_dict) == list and type(update_dict[0]) == dict:
+                if type(update_schemas) == list \
+                        and type(update_schemas[0]) == dict:
                     # pop, assert single element
-                    update_dict, = update_dict
-                definitions.update(update_dict)
+                    update_schemas, = update_schemas
+                definitions.update(update_schemas)
                 defs = []  # swag.get('definitions', [])
                 defs += extract_definitions(
                     defs, endpoint=rule.endpoint, verb=verb,
