@@ -25,11 +25,11 @@ from flask import render_template
 from flask import request, url_for
 from flask import abort
 from flask.views import MethodView
-from flask.json import JSONEncoder
 try:
     from flask_restful.reqparse import RequestParser
 except ImportError:
     RequestParser = None
+from json import JSONEncoder
 import jsonschema
 from mistune import markdown
 from .constants import OAS3_SUB_COMPONENTS
