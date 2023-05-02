@@ -29,7 +29,6 @@ try:
     from flask_restful.reqparse import RequestParser
 except ImportError:
     RequestParser = None
-from json import JSONEncoder
 import jsonschema
 from mistune import markdown
 from .constants import OAS3_SUB_COMPONENTS
@@ -911,10 +910,3 @@ class Swagger(object):
 
 # backwards compatibility
 Flasgger = Swagger  # noqa
-
-
-class LazyJSONEncoder(JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, LazyString):
-            return str(obj)
-        return super(LazyJSONEncoder, self).default(obj)
